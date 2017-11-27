@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/nixer89/AlexSafari/issues"
   },
-  "homepage": "https://github.com/nixer89/AlexSafari#readme"
+  "homepage": "https://github.com/nixer89/AlexSafari#readme",
+  "dependencies": {
+    "alexa-sdk": "^1.0.21"
+  }
 }
