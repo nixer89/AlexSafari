@@ -1,0 +1,22 @@
+{
+  "name": "alexsafari",
+  "version": "0.0.1",
+  "description": "Do a safari tour with Alexa! (Kids Skill)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nixer89/AlexSafari.git"
+  },
+  "author": "Daniel Siedentopf & Christian Riese",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nixer89/AlexSafari/issues"
+  },
+  "homepage": "https://github.com/nixer89/AlexSafari#readme",
+  "dependencies": {
+    "alexa-sdk": "^1.0.21"
+  }
+}
