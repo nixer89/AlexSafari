@@ -7,6 +7,7 @@ var s3 = new AWS.S3();
 
 var APP_ID = process.env.APP_ID;
 var S3_BUCKET = process.env.S3_BUCKET;
+var S3_BUCKET_URL = process.env.S3_BUCKET_URL;
 
 if (S3_BUCKET){
     
@@ -52,38 +53,49 @@ var testHandler = {
         this.emit(":ask", "Hallo. Willkommen zu deiner Safari. Bitte sage mir einen Buchstaben.");
     },
     "LetterIntent": function () {
+        var playAudioResponse = this;
         var letter = this.event.request.intent.slots.letter;
         if(letter) {
             console.log("Verstanden habe ich: " + letter.value);
 
-            if("s" == letter.value.toLowerCase()) {
-                var signedURL;
-                // create a signed URL to the MP3 that expires after 5 seconds - this should be plenty of time to allow alexa to load and cache mp3
-                var signedParams = {Bucket: S3_BUCKET, Key: 'pig.mp3', Expires: 600, ResponseContentType: 'audio/mpeg'};
-                s3.getSignedUrl('getObject', signedParams, function (err, url) {
-                    
-                    console.log("Ich habe eine signed url! cool!");
-                    
-                    if (url){
-                        console.log("URL = " + url);
-                        // ampersands are not valid in SSML so we need to escape these out with &amp;
-                        url = url.replace(/&/g, '&amp;'); // replace ampersands    
-                        signedURL = url;
-                        var speechOutput = '<audio src="' + signedURL + '"/>';
+            if("p" == letter.value.toLowerCase()) {
+                //play sound directly through public url of MP3-File
+                var pigUrl = S3_BUCKET_URL + "pig.mp3";
+                var speechOutput = '<audio src="' + pigUrl + '"/>';
+                console.log("speech output is: " + speechOutput);
+                this.emit(":tell", speechOutput);
 
-                        console.log("speech output is: " + speechOutput);
-
-                        this.emit(':tell', speechOutput);
-
-                    } else {
-                        this.emit(":tell", 'There was an error creating the signed URL. Please ensure that the S3 Bucket name is correct in the environment variables and IAM permissions are set correctly');
-                    }
-                });
+                //disable s3 generation of signed url -> mp3 files will be public!
+                var test = false;
+                if(test) {
+                    var signedURL;
+                    // create a signed URL to the MP3 that expires after 5 seconds - this should be plenty of time to allow alexa to load and cache mp3
+                    var signedParams = {Bucket: S3_BUCKET, Key: 'pig.mp3', Expires: 60, ResponseContentType: 'audio/mpeg'};
+                    s3.getSignedUrl('getObject', signedParams, function (err, url) {
+                        
+                        console.log("Ich habe eine signed url! cool!");
+                        
+                        if (url) {
+                            console.log("URL = " + url);
+                            // ampersands are not valid in SSML so we need to escape these out with &amp;
+                            url = url.replace(/&/g, '&amp;'); // replace ampersands    
+                            signedURL = url;
+                            var speechOutput = '<audio src="' + signedURL + '"/>';
+    
+                            console.log("speech output is: " + speechOutput);
+    
+                            playAudioResponse.emit(":tell", speechOutput);
+    
+                        } else {
+                            playAudioResponse.emit(":tell", 'There was an error creating the signed URL. Please ensure that the S3 Bucket name is correct in the environment variables and IAM permissions are set correctly');
+                        }
+                    });
+                }
             } else {
                 this.emit(":ask", letter.value);
             }
         } else {
-            this.emit(":ask", "Das konnte ich leider nicht verstehen. Sage mir noch einen Buchstaben.");
+            playAudioResponse.emit(":ask", "Das konnte ich leider nicht verstehen. Sage mir noch einen Buchstaben.");
         }
     },
     "AMAZON.CancelIntent": function () {
@@ -108,7 +120,6 @@ var testHandler = {
 };
 
 var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
-    
     "LaunchRequest": function () {
         //call hello intent on startup
         this.emit(":tell", "HelloWorldIntent");
@@ -132,7 +143,6 @@ var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
 });
 
 var animalGuessingHandler = Alexa.CreateStateHandler(states.ANIMALGUESSMODE, {
-    
     "AnimalGuessIntent": function () {
         //add logic for guessing the current anmial
         this.emit(":tell", "Hello!");
