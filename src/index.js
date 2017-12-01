@@ -3,7 +3,10 @@
 'use strict';
 var Alexa = require('alexa-sdk');
 const AWS = require('aws-sdk');
+var languageFilePrototype = require('./language_properties');
+var configFile = require('./safariConfig');
 var s3 = new AWS.S3();
+var safariConfig = "";
 
 var APP_ID = process.env.APP_ID;
 var S3_BUCKET = process.env.S3_BUCKET;
@@ -41,8 +44,15 @@ var states = {
 };
 
 exports.handler = function(event, context, callback) {
+    //initial stuff
+    safariConfig = configFile.getSafariConfig();
+    console.log("Bucket URL: " + S3_BUCKET_URL);
+    var languageConfigFile = new languageFilePrototype(S3_BUCKET_URL);
+
+    //initial alexa stuff
     var alexa = Alexa.handler(event, context);
     alexa.appId = APP_ID;
+    alexa.resources = languageConfigFile.getLanguageProperties();
     alexa.registerHandlers(testHandler);
     alexa.execute();
 };
@@ -51,7 +61,10 @@ var testHandler = {
     "LaunchRequest": function () {
         console.log("Bin gerade im LaunchRequest");
         //call hello intent on startup
-        this.emit(":ask", "Hallo. Willkommen zu deiner Safari. Bitte sage mir einen Buchstaben.");
+        var elephant_start = this.t(safariConfig.Africa.elephant.questions.guessing.difficulty_1.variant1);
+        var elephant_end = this.t(safariConfig.Africa.elephant.questions.guessing.difficulty_1.variant2);
+
+        this.emit(":ask", elephant_start + elephant_end);
     },
     "LetterIntent": function () {
         var playAudioResponse = this;
@@ -101,21 +114,22 @@ var testHandler = {
     },
     "AMAZON.CancelIntent": function () {
         //call hello intent on startup
-        this.emit(":tell","Hallo. Willkommen zu deiner Safari.");
+        this.emit(":tell","Okay, ich breche hier ab.");
     },
     "AMAZON.StopIntent": function () {
         //call hello intent on startup
-        this.emit(":tell","Hallo. Willkommen zu deiner Safari.");
+        this.emit(":tell","Tschüss und besuche mich bald wieder, um die nächsten Abendteuer zu erleben!");
     },
     "AMAZON.HelpIntent": function () {
-        //do we need proper session ending request? like storing current progress?
-        this.emit(":tell", "Tschüss und auf wiedersehen!");
+        this.emit(":tell", "Hilfe!");
     },
     "SessionEndedRequest'": function () {
-        this.emit(":tell", "Bye!");
+        //do we need proper session ending request? like storing current progress?
+
+        //this.emit(":tell", "Bye!");
     },
     "Unhandled": function() {
-        var message = "Das habe ich nicht verstanden.";
+        var message = "Das habe ich nicht verstanden. Bitte gib die Antwort nochmal.";
         this.emit(":ask", message, message);
     },
 };
@@ -137,13 +151,25 @@ var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
         //add logic to select the safari zone
         this.emit(":tell", "Hello!");
     },
-    "SessionEndedRequest": function () {
+    "AMAZON.CancelIntent": function () {
+        //call hello intent on startup
+        this.emit(":tell","Okay, ich breche hier ab.");
+    },
+    "AMAZON.StopIntent": function () {
+        //call hello intent on startup
+        this.emit(":tell","Tschüss und besuche mich bald wieder, um die nächsten Abendteuer zu erleben!");
+    },
+    "AMAZON.HelpIntent": function () {
+        this.emit(":tell", "Hilfe!");
+    },
+    "SessionEndedRequest'": function () {
         //do we need proper session ending request? like storing current progress?
-        this.emit(":tell", "Hello!");
+
+        //this.emit(":tell", "Bye!");
     },
     "Unhandled": function() {
-        //what if alexa did not understand the user correctly?
-        this.emit(":tell", "Hello!");
+        var message = "Das habe ich nicht verstanden. Bitte gib die Antwort nochmal.";
+        this.emit(":ask", message, message);
     },
 });
 

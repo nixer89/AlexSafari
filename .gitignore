@@ -1,2 +1,4 @@
 node_modules
 src/src.zip
+sounds/unconverted/*.mp3
+sounds/unconverted/*.wav

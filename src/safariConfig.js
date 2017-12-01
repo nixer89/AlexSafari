@@ -1,4 +1,9 @@
+exports.getSafariConfig = function() {
+    return adventure;
+}
+
 var adventure = {
+    "hello_message": "SAY_HELLO_MESSAGE",
     "supportContinents" : ["Africa", "Europe", "Asia","Australia", "America"],
     "Africa" : {
         "title": "african safari",
@@ -9,8 +14,8 @@ var adventure = {
             "questions" : {
                 "guessing": {
                     "difficulty_1" : {
-                        "variant1": "abc",
-                        "variant2": "abcd",
+                        "variant1": "ELEFANT.START",
+                        "variant2": "ELEFANT.END",
                         "answer": "elephant"
                     }
                 },
