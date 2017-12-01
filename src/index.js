@@ -36,7 +36,8 @@ if (S3_BUCKET){
 var states = {
     STARTMODE: "_STARTMODE",  // Prompt the user to start or restart the game.
     ANIMALGUESSMODE: "_ANIMALGUESSING", // User is trying to guess an animal
-    NUMBERGUESSMODE: "_NUMBERGUESSING" // User is trying to guess the number.
+    NUMBERGUESSMODE: "_NUMBERGUESSING", // User is trying to guess the number.
+    SPELLMODE: "_SPELLING" // User is trying to spell some name
 };
 
 exports.handler = function(event, context, callback) {
@@ -132,6 +133,10 @@ var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
         //add logic to select the safari zone
         this.emit(":tell", "Hello!");
     },
+    "SupportedZonesIntent": function () {
+        //add logic to select the safari zone
+        this.emit(":tell", "Hello!");
+    },
     "SessionEndedRequest": function () {
         //do we need proper session ending request? like storing current progress?
         this.emit(":tell", "Hello!");
@@ -144,6 +149,10 @@ var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
 
 var animalGuessingHandler = Alexa.CreateStateHandler(states.ANIMALGUESSMODE, {
     "AnimalGuessIntent": function () {
+        //add logic for guessing the current anmial
+        this.emit(":tell", "Hello!");
+    },
+    "SupportedAnimals": function () {
         //add logic for guessing the current anmial
         this.emit(":tell", "Hello!");
     },
