@@ -31,8 +31,10 @@ var languageProperties = {
         'translation': {
             'SAY_HELLO_MESSAGE' : 'Hallo. Willkommen zu deiner Safari. Bitte nenne mir einen Buchstaben.',
             'ELEFANT' : {
-                'START' : "Das ist ein Elefant. <audio src='S3_BUCKET_URL_elephant.mp3'/>",
-                'END': " Er wird bis zu 50 Jahre alt. <audio src='S3_BUCKET_URL_elephant.mp3'/>"
+                'DIFFICULTY_1' : {
+                    'VARIANT_1' : "Das ist ein Elefant. <audio src='S3_BUCKET_URL_ANIMAL.mp3'/>",
+                    'VARIANT_2' : "Er wird bis zu 50 Jahre alt. <audio src='S3_BUCKET_URL_ANIMAL.mp3'/>"
+                }
             }
         }
     }

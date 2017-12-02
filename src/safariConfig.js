@@ -10,12 +10,13 @@ var adventure = {
         "supportedAnimals" : ["elephant", "lion"],
         "start_safari": "Du läufst durch die dicht mit Bäumen bewachsene Savanne Afrikas.",
         "elephant" : {
+            "name":"elephant",
             "nameVariations": ["elephant", "bull elephant", "elephant child"],
             "questions" : {
                 "guessing": {
                     "difficulty_1" : {
-                        "variant1": "ELEFANT.START",
-                        "variant2": "ELEFANT.END",
+                        "variant1": "ELEFANT.DIFFICULTY_1.VARIANT_1",
+                        "variant2": "ELEFANT.DIFFICULTY_1.VARIANT_2",
                         "answer": "elephant"
                     }
                 },

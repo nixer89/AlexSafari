@@ -7,6 +7,7 @@ var languageFilePrototype = require('./language_properties');
 var configFile = require('./safariConfig');
 var s3 = new AWS.S3();
 var safariConfig = "";
+var error_text;
 
 var APP_ID = process.env.APP_ID;
 var S3_BUCKET = process.env.S3_BUCKET;
@@ -59,12 +60,21 @@ exports.handler = function(event, context, callback) {
 
 var testHandler = {
     "LaunchRequest": function () {
+
+        if (error_text){
+            this.emit(':tell', error_text);   
+        }
+
+        this.t('SAY_HELLO_MESSAGE');
+
         console.log("Bin gerade im LaunchRequest");
         //call hello intent on startup
         var elephant_start = this.t(safariConfig.Africa.elephant.questions.guessing.difficulty_1.variant1);
         var elephant_end = this.t(safariConfig.Africa.elephant.questions.guessing.difficulty_1.variant2);
+        elephant_start = elephant_start.replace('ANIMAL',safariConfig.Africa.elephant.name);
+        elephant_end = elephant_end.replace('ANIMAL',safariConfig.Africa.elephant.name);
 
-        this.emit(":ask", elephant_start + elephant_end);
+        this.emit(":ask", elephant_start + elephant_end, "test");
     },
     "LetterIntent": function () {
         var playAudioResponse = this;
@@ -144,6 +154,15 @@ var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
         this.emit(":tell", "Hello!");
     },
     "ZoneSelectionIntent": function () {
+        //pick random animal
+        dfsdf
+        //pick question type
+        sdsdfs
+        //set mode depending on question type
+        this.session.sate = ANIMALGUESSMODE;
+        //ask question
+        sdfdf
+
         //add logic to select the safari zone
         this.emit(":tell", "Hello!");
     },
