@@ -1,4 +1,3 @@
-
 /** Alexa Safari skill for kids! */
 'use strict';
 var Alexa = require('alexa-sdk');
@@ -47,7 +46,6 @@ var states = {
 exports.handler = function(event, context, callback) {
     //initial stuff
     safariConfig = configFile.getSafariConfig();
-    console.log("Bucket URL: " + S3_BUCKET_URL);
     var languageConfigFile = new languageFilePrototype(S3_BUCKET_URL);
 
     //initial alexa stuff
@@ -58,69 +56,51 @@ exports.handler = function(event, context, callback) {
     alexa.execute();
 };
 
-var testHandler = {
+var defaultHandler = {
     "LaunchRequest": function () {
-
-        if (error_text){
+        if (error_text) {
             this.emit(':tell', error_text);   
         }
 
-        this.t('SAY_HELLO_MESSAGE');
-
-        console.log("Bin gerade im LaunchRequest");
-        //call hello intent on startup
-        var elephant_start = this.t(safariConfig.Africa.elephant.questions.guessing.difficulty_1.variant1);
-        var elephant_end = this.t(safariConfig.Africa.elephant.questions.guessing.difficulty_1.variant2);
-        elephant_start = elephant_start.replace('ANIMAL',safariConfig.Africa.elephant.name);
-        elephant_end = elephant_end.replace('ANIMAL',safariConfig.Africa.elephant.name);
-
-        this.emit(":ask", elephant_start + elephant_end, "test");
-    },
-    "LetterIntent": function () {
-        var playAudioResponse = this;
-        var letter = this.event.request.intent.slots.letter;
-        if(letter) {
-            console.log("Verstanden habe ich: " + letter.value);
-
-            if("p" == letter.value.toLowerCase()) {
-                //play sound directly through public url of MP3-File
-                var pigUrl = S3_BUCKET_URL + "pig.mp3";
-                var speechOutput = '<audio src="' + pigUrl + '"/>';
-                console.log("speech output is: " + speechOutput);
-                this.emit(":tell", speechOutput);
-
-                //disable s3 generation of signed url -> mp3 files will be public!
-                var test = false;
-                if(test) {
-                    var signedURL;
-                    // create a signed URL to the MP3 that expires after 5 seconds - this should be plenty of time to allow alexa to load and cache mp3
-                    var signedParams = {Bucket: S3_BUCKET, Key: 'pig.mp3', Expires: 60, ResponseContentType: 'audio/mpeg'};
-                    s3.getSignedUrl('getObject', signedParams, function (err, url) {
-                        
-                        console.log("Ich habe eine signed url! cool!");
-                        
-                        if (url) {
-                            console.log("URL = " + url);
-                            // ampersands are not valid in SSML so we need to escape these out with &amp;
-                            url = url.replace(/&/g, '&amp;'); // replace ampersands    
-                            signedURL = url;
-                            var speechOutput = '<audio src="' + signedURL + '"/>';
-    
-                            console.log("speech output is: " + speechOutput);
-    
-                            playAudioResponse.emit(":tell", speechOutput);
-    
-                        } else {
-                            playAudioResponse.emit(":tell", 'There was an error creating the signed URL. Please ensure that the S3 Bucket name is correct in the environment variables and IAM permissions are set correctly');
-                        }
-                    });
-                }
-            } else {
-                this.emit(":ask", letter.value);
-            }
+        if(Object.keys(this.attributes).length === 0) {
+            this.response.listen(resolveTextProperty("SAY_HELLO_MESSAGE", this));
         } else {
-            playAudioResponse.emit(":ask", "Das konnte ich leider nicht verstehen. Sage mir noch einen Buchstaben.");
+            this.response.listen(resolveTextProperty("CONTINUE", this));
         }
+
+        this.emit(":responseReady");
+    },
+    "ContinentIntent": function() {
+        var continent = this.event.request.intent.slots.continent.value;
+
+        if(continent !== "Africa") {
+            this.response.speak(resolveTextProperty("CONTINENT_NOT_SUPPORTED", this))
+        } else {
+            var adventure = createAdventure(continent);
+            this.attributes.adventure = adventure;
+
+            var s = resolveTextPropertyWithValue("CONTINENT_CHOSEN", [["CONTINENT", continent]], this);
+            s += resolveTextProperty(adventure.start_safari, this);
+
+            var q = adventure.questions[adventure.currentQuestion++];
+            s += resolveTextPropertyWithValue(q.type + "." + q.id + "." + q.variant);
+
+            this.response.listen(s);
+        }
+
+        this.emit(":responseReady");
+    },
+    'AMAZON.YesIntent': function() {
+        var s = "Okay, dann lass uns da weiter machen, wo du aufgehört hast!";
+        s += this.attributes.adventure.questions[this.attributes.adventure.currentQuestion++];
+
+        this.response.listen(s);
+        this.emit(":responseReady");
+    },
+    'AMAZON.NoIntent': function() {
+        this.attributes.adventure = {};
+        this.response.listen("Also gut, starten wir eine neue Safari! Bitte nenne mir zuerst den Kontinent, den du besuchen willst.");
+        this.emit(':responseReady');
     },
     "AMAZON.CancelIntent": function () {
         //call hello intent on startup
@@ -134,63 +114,13 @@ var testHandler = {
         this.emit(":tell", "Hilfe!");
     },
     "SessionEndedRequest'": function () {
-        //do we need proper session ending request? like storing current progress?
-
-        //this.emit(":tell", "Bye!");
+        this.emit(':saveState', true);
     },
     "Unhandled": function() {
         var message = "Das habe ich nicht verstanden. Bitte gib die Antwort nochmal.";
         this.emit(":ask", message, message);
-    },
+    }
 };
-
-var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
-    "LaunchRequest": function () {
-        //call hello intent on startup
-        this.emit(":tell", "HelloWorldIntent");
-    },
-    "HelloIntent": function () {
-        //add an suitable welcome message
-        this.emit(":tell", "Hello!");
-    },
-    "ZoneSelectionIntent": function () {
-        //pick random animal
-        dfsdf
-        //pick question type
-        sdsdfs
-        //set mode depending on question type
-        this.session.sate = ANIMALGUESSMODE;
-        //ask question
-        sdfdf
-
-        //add logic to select the safari zone
-        this.emit(":tell", "Hello!");
-    },
-    "SupportedZonesIntent": function () {
-        //add logic to select the safari zone
-        this.emit(":tell", "Hello!");
-    },
-    "AMAZON.CancelIntent": function () {
-        //call hello intent on startup
-        this.emit(":tell","Okay, ich breche hier ab.");
-    },
-    "AMAZON.StopIntent": function () {
-        //call hello intent on startup
-        this.emit(":tell","Tschüss und besuche mich bald wieder, um die nächsten Abendteuer zu erleben!");
-    },
-    "AMAZON.HelpIntent": function () {
-        this.emit(":tell", "Hilfe!");
-    },
-    "SessionEndedRequest'": function () {
-        //do we need proper session ending request? like storing current progress?
-
-        //this.emit(":tell", "Bye!");
-    },
-    "Unhandled": function() {
-        var message = "Das habe ich nicht verstanden. Bitte gib die Antwort nochmal.";
-        this.emit(":ask", message, message);
-    },
-});
 
 var animalGuessingHandler = Alexa.CreateStateHandler(states.ANIMALGUESSMODE, {
     "AnimalGuessIntent": function () {
@@ -204,5 +134,55 @@ var animalGuessingHandler = Alexa.CreateStateHandler(states.ANIMALGUESSMODE, {
     "Unhandled": function() {
         //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
         this.emit(":tell", "Hello!");
-    },
+    }
 });
+
+function createAdventure(continent) {
+    //TODO Crappy as fuck, we need to think of a really good idea, this is just for testing
+    var adventure = {};
+    adventure.continent = continent;
+    adventure.start_safari = safariConfig[continent].start_safari;
+
+    adventure.questions = [];
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["MATH"][0]), "MATH");
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["GUESS"][0]), "GUESS");
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["SPELL"][0]), "SPELL");
+
+    adventure.currentQuestion = 0;
+    adventure.score = 0;
+
+    return adventure;
+}
+
+function createQuestion(selectedQ, type) {
+    var q = {};
+    q.id = selectedQ.id;
+    q.type = type;
+    q.answer = selectedQ.answer;
+
+    var animals = [];
+    if(selectedQ.animals !== null) {
+        animals = selectedQ.supportedAnimals;
+    } else {
+        animals = safariConfig[continent].supportedAnimals;
+    }
+    q.animal = animals[Math.floor(Math.random() * animals.length) + 1];
+
+    q.variant = Math.floor(Math.random() * selectedQ.variants) + 1;
+
+    return q
+}
+
+function resolveTextProperty(s, a) {
+    return a.t(s);
+}
+
+function resolveTextPropertyWithValue(s, p, a) {
+    var message = a.t(s);
+
+    p.forEach(function(e) {
+       message = message.replace("#" + e[0] + "#", e[1]);
+    });
+
+    return message
+}

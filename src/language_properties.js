@@ -3,7 +3,7 @@ var S3_BUCKET_URL = "";
 
 LanguageConfig.prototype.getLanguageProperties = function() {
     return languageProperties;
-}
+};
 
 function LanguageConfig(bucket_url) {
     S3_BUCKET_URL = bucket_url;
@@ -29,15 +29,32 @@ var languageProperties = {
     },
     'de-DE': {
         'translation': {
-            'SAY_HELLO_MESSAGE' : 'Hallo. Willkommen zu deiner Safari. Bitte nenne mir einen Buchstaben.',
-            'ELEFANT' : {
-                'DIFFICULTY_1' : {
-                    'VARIANT_1' : "Das ist ein Elefant. <audio src='S3_BUCKET_URL_ANIMAL.mp3'/>",
-                    'VARIANT_2' : "Er wird bis zu 50 Jahre alt. <audio src='S3_BUCKET_URL_ANIMAL.mp3'/>"
+            'SAY_HELLO_MESSAGE' : 'Hallo! Willkommen zu deiner persönlichen Safari! Bitte nenne mir zuerst den Kontinent, den du besuchen willst.',
+            'CONTINUE' : "Du hast deine letzte Safari nicht zu Ende gebracht, willst du dort weiter machen wo du aufgehört hast?",
+            'CONTINENT_NOT_SUPPORTED' : "Tut mir Leid, ich unterstütze momentan nur den Kontinent Afrika.",
+            'CONTINENT_CHOSEN': "Super! Du hast dich für #CONTINENT# entschieden!",
+            'START_AFRICA': 'Du läufst durch die dicht mit Bäumen bewachsene Savanne Afrikas.',
+
+            'MATH' : {
+                'WATERHOLE_COUNT' : {
+                    '1' : "Du kommst an ein Wasserloch. <audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Dort stehen zwei #ANIMAL# mit ihren fünf Kindern. Wie viele #ANIMAL#s sind es insgesamt?",
+                    '2' : "Dort ist ein großes Wasserloch! Wow schau dir den mächtigen Papa #ANIMAL# an. <audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Er ist mit seinen zwei Kindern dort. Kannst du mir sagen wie viele #ANIMAL#s es insgesamt sind?"
+                }
+            },
+
+            'GUESS' : {
+                'SIMPLE_GUESS' : {
+                    '1' : "Welches Tier macht dieses Geräusch?<audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Hast du es erkannt?"
+                }
+            },
+
+            'SPELL' : {
+                'SIMPLE_SPELL' : {
+                    '2' : "Kannst du #ANIMAL# buchstabieren?"
                 }
             }
         }
     }
-}
+};
 
 module.exports = LanguageConfig;
