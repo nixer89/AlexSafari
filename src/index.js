@@ -83,7 +83,7 @@ var defaultHandler = {
             s += resolveTextProperty(adventure.start_safari, this);
 
             var q = adventure.questions[adventure.currentQuestion++];
-            s += resolveTextPropertyWithValue(q.type + "." + q.id + "." + q.variant);
+            s += resolveTextPropertyWithValue(q.message, q.values, this);
 
             this.response.listen(s);
         }
@@ -156,8 +156,6 @@ function createAdventure(continent) {
 
 function createQuestion(selectedQ, type) {
     var q = {};
-    q.id = selectedQ.id;
-    q.type = type;
     q.answer = selectedQ.answer;
 
     var animals = [];
@@ -166,9 +164,11 @@ function createQuestion(selectedQ, type) {
     } else {
         animals = safariConfig[continent].supportedAnimals;
     }
-    q.animal = animals[Math.floor(Math.random() * animals.length) + 1];
+    var animal = animals[Math.floor(Math.random() * animals.length) + 1];
+    q.values = [];
+    q.values.push(["ANIMALS", animal]);
 
-    q.variant = Math.floor(Math.random() * selectedQ.variants) + 1;
+    q.message = type + "." + selectedQ.id + ".VARIANT_" + (Math.floor(Math.random() * selectedQ.variants) + 1);
 
     return q
 }
