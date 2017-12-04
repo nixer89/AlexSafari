@@ -65,7 +65,7 @@ var newSessionHandler = {
         if(Object.keys(this.attributes).length === 0) {
             this.response.speak(resolveTextProperty("SAY_HELLO_MESSAGE", this)).listen();
         } else {
-            this.response.speak(resolveTextPropertyWithValue("CONTINUE", [["NAME", this.attributes.adventure.name]], this)).listen();
+            this.response.speak(resolveTextPropertyWithValue("CONTINUE", [["NAME", this.attributes.name]], this)).listen();
         }
 
         this.emit(":responseReady");
@@ -118,7 +118,8 @@ var newSessionHandler = {
         this.emit(':responseReady');
     },
     "SessionEndedRequest'": function () {
-        this.handler.state = undefined;
+        this.handler.state = '';
+        delete this.attributes.STATE;;
         this.emit(':saveState', true);
     },
     "Unhandled": function() {
@@ -157,11 +158,15 @@ var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
         this.emit(":responseReady");
     },
     "Unhandled": function() {
-        //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
-        this.emit(":tell", "Hello!");
+        var s = "Das habe ich nicht verstanden. Bitte sag wiederhole das.";
+
+        this.response.listen(s);
+
+        this.emit(":responseReady");
     },
     "SessionEndedRequest'": function () {
-        this.handler.state = undefined;
+        this.handler.state = '';
+        delete this.attributes.STATE;
         this.emit(':saveState', true);
     }
 });
@@ -193,11 +198,15 @@ var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
         this.emit(":responseReady");
     },
     "Unhandled": function() {
-        //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
-        this.emit(":tell", "Hello!");
+        var s = "Das habe ich nicht verstanden. Bitte sag wiederhole das.";
+
+        this.response.listen(s);
+
+        this.emit(":responseReady");
     },
     "SessionEndedRequest'": function () {
-        this.handler.state = undefined;
+        this.handler.state = '';
+        delete this.attributes.STATE;
         this.emit(':saveState', true);
     }
 });
@@ -229,11 +238,15 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
         this.emit(":responseReady");
     },
     "Unhandled": function() {
-        //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
-        this.emit(":tell", "Hello!");
+        var s = "Das habe ich nicht verstanden. Bitte sag wiederhole das.";
+
+        this.response.listen(s);
+
+        this.emit(":responseReady");
     },
     "SessionEndedRequest'": function () {
-        this.handler.state = undefined;
+        this.handler.state = '';
+        delete this.attributes.STATE;
         this.emit(':saveState', true);
     }
 });
@@ -318,7 +331,8 @@ function setMode(q, a) {
             a.handler.state = states.SPELLMODE;
             break;
         default:
-            a.handler.state = undefined;
+            a.handler.state = '';
+            delete this.attributes.STATE;
     }
 }
 
