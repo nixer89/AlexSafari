@@ -138,10 +138,10 @@ var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
         this.attributes.adventure.score++;
         s = askQuestion(s, this);
 
-        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
-            this.response.speak(s).listen();
-        else
+        if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
+        else
+            this.response.speak(s).listen();
 
         this.emit(":responseReady");
     },
@@ -150,10 +150,10 @@ var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
 
         s = askQuestion(s, this);
 
-        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
-            this.response.speak(s).listen();
-        else
+        if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion)
             this.response.speak(s);
+        else
+            this.response.speak(s).listen();
 
         this.emit(":responseReady");
     },
@@ -178,10 +178,10 @@ var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
         this.attributes.adventure.score++;
         s = askQuestion(s, this);
 
-        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
-            this.response.speak(s).listen();
-        else
+        if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
+        else
+            this.response.speak(s).listen();
 
         this.emit(":responseReady");
     },
@@ -190,10 +190,10 @@ var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
 
         s = askQuestion(s, this);
 
-        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
-            this.response.speak(s).listen();
-        else
+        if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
+        else
+            this.response.speak(s).listen();
 
         this.emit(":responseReady");
     },
@@ -218,10 +218,10 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
         this.attributes.adventure.score++;
         s = askQuestion(s, this);
 
-        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
-            this.response.speak(s).listen();
-        else
+        if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
+        else
+            this.response.speak(s).listen();
 
         this.emit(":responseReady");
     },
@@ -230,10 +230,10 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
 
         s = askQuestion(s, this);
 
-        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
-            this.response.speak(s).listen();
-        else
+        if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
+        else
+            this.response.speak(s).listen();
 
         this.emit(":responseReady");
     },
@@ -254,13 +254,15 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
 function askQuestion(s, a) {
     var q = {};
 
-    if(a.attributes.adventure.questions.length >= a.attributes.adventure.currentQuestion + 1) {
-        q = a.attributes.adventure.questions[a.attributes.adventure.currentQuestion++];
-        s += resolveTextPropertyWithValue(q.message, q.values, a);
-    } else {
+    if(a.attributes.adventure.questions.length === a.attributes.adventure.currentQuestion) {
         q.type = "";
+        a.attributes.adventure.currentQuestion++;
         s += "Dein Abenteuer ist damit beendet. Du hast " + a.attributes.adventure.score + " von " + a.attributes.adventure.questions.length
             + " Fragen richtig beantwortet. Sehr gut!";
+    } else {
+        q = a.attributes.adventure.questions[a.attributes.adventure.currentQuestion];
+        a.attributes.adventure.currentQuestion++;
+        s += resolveTextPropertyWithValue(q.message, q.values, a);
     }
 
     setMode(q, a);
@@ -332,7 +334,7 @@ function setMode(q, a) {
             break;
         default:
             a.handler.state = '';
-            delete this.attributes.STATE;
+            delete a.attributes.STATE;
     }
 }
 
