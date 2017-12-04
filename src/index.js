@@ -12,35 +12,34 @@ var APP_ID = process.env.APP_ID;
 var S3_BUCKET = process.env.S3_BUCKET;
 var S3_BUCKET_URL = process.env.S3_BUCKET_URL;
 
-if (S3_BUCKET){
-    
+if (S3_BUCKET) {
     var bucket_params = {
-      Bucket: S3_BUCKET
-     };
-     s3.headBucket(bucket_params, function(err, data) {
-       if (err) {
-           console.log ('S3 Bucket does not exist - lets try and create it')
-           s3.createBucket(bucket_params, function(err, data) {
-               if (err) {
-                   console.log('Could not create bucket', err.stack);
-                   error_text = 'The S3 Bucket could not be created - make sure you have set up the IAM role properly or alternatively try a different random bucket name'
-               }
-               else     {
-                   console.log('Bucket Created');
-               }
-         });
-       }
-       else {
-           console.log('Bucket already exists');
-       }
-     });
+        Bucket: S3_BUCKET
+    };
+
+    s3.headBucket(bucket_params, function(err, data) {
+        if (err) {
+            console.log ('S3 Bucket does not exist - lets try and create it')
+            s3.createBucket(bucket_params, function(err, data) {
+                if (err) {
+                    console.log('Could not create bucket', err.stack);
+                    error_text = 'The S3 Bucket could not be created - make sure you have set up the IAM role properly or alternatively try a different random bucket name'
+                }
+                else     {
+                    console.log('Bucket Created');
+                }
+            });
+        }
+        else {
+            console.log('Bucket already exists');
+        }
+    });
 }
 
 var states = {
-    STARTMODE: "_STARTMODE",  // Prompt the user to start or restart the game.
-    ANIMALGUESSMODE: "_ANIMALGUESSING", // User is trying to guess an animal
-    NUMBERGUESSMODE: "_NUMBERGUESSING", // User is trying to guess the number.
-    SPELLMODE: "_SPELLING" // User is trying to spell some name
+    GUESSMODE: "_GUESSMODE", // User is trying to guess an animal
+    SPELLMODE: "_SPELLMODE", // User is trying to guess the number.
+    MATHMODE: "_MATHMODE" // User is trying to spell some name
 };
 
 exports.handler = function(event, context, callback) {
@@ -51,30 +50,38 @@ exports.handler = function(event, context, callback) {
     //initial alexa stuff
     var alexa = Alexa.handler(event, context);
     alexa.appId = APP_ID;
+    alexa.dynamoDBTableName = 'AlexaSafari';
     alexa.resources = languageConfigFile.getLanguageProperties();
-    alexa.registerHandlers(testHandler);
+    alexa.registerHandlers(newSessionHandler, guessHandler, spellHandler, mathHandler);
     alexa.execute();
 };
 
-var defaultHandler = {
+var newSessionHandler = {
     "LaunchRequest": function () {
         if (error_text) {
-            this.emit(':tell', error_text);   
+            this.emit(':tell', error_text);
         }
 
         if(Object.keys(this.attributes).length === 0) {
-            this.response.listen(resolveTextProperty("SAY_HELLO_MESSAGE", this));
+            this.response.speak(resolveTextProperty("SAY_HELLO_MESSAGE", this)).listen();
         } else {
-            this.response.listen(resolveTextProperty("CONTINUE", this));
+            this.response.speak(resolveTextPropertyWithValue("CONTINUE", [["NAME", this.attributes.adventure.name]], this)).listen();
         }
 
+        this.emit(":responseReady");
+    },
+    "FirstNameIntent": function () {
+        var firstName = this.event.request.intent.slots.firstName.value;
+        this.attributes.name = firstName;
+
+        this.response.speak(resolveTextPropertyWithValue("SELECT_CONTINENT", [["NAME", firstName]], this)).listen();
         this.emit(":responseReady");
     },
     "ContinentIntent": function() {
         var continent = this.event.request.intent.slots.continent.value;
 
-        if(continent !== "Africa") {
-            this.response.speak(resolveTextProperty("CONTINENT_NOT_SUPPORTED", this))
+        if(continent !== "Afrika") {
+            this.response.speak(resolveTextProperty("CONTINENT_NOT_SUPPORTED", this)).listen();
         } else {
             var adventure = createAdventure(continent);
             this.attributes.adventure = adventure;
@@ -82,60 +89,171 @@ var defaultHandler = {
             var s = resolveTextPropertyWithValue("CONTINENT_CHOSEN", [["CONTINENT", continent]], this);
             s += resolveTextProperty(adventure.start_safari, this);
 
-            var q = adventure.questions[adventure.currentQuestion++];
-            s += resolveTextPropertyWithValue(q.message, q.values, this);
+            s = askQuestion(s, this);
 
-            this.response.listen(s);
+            this.response.speak(s).listen();
         }
 
         this.emit(":responseReady");
     },
-    'AMAZON.YesIntent': function() {
+    'RightIntent': function() {
         var s = "Okay, dann lass uns da weiter machen, wo du aufgehört hast!";
-        s += this.attributes.adventure.questions[this.attributes.adventure.currentQuestion++];
 
-        this.response.listen(s);
+        s = askQuestion(s, this);
+
+        this.response.speak(s).listen();
         this.emit(":responseReady");
     },
-    'AMAZON.NoIntent': function() {
+    'WrongIntent': function() {
         this.attributes.adventure = {};
-        this.response.listen("Also gut, starten wir eine neue Safari! Bitte nenne mir zuerst den Kontinent, den du besuchen willst.");
+        this.response.speak("Also gut, starten wir eine neue Safari! Bitte nenne mir zuerst deinen Namen.").listen();
         this.emit(':responseReady');
     },
-    "AMAZON.CancelIntent": function () {
-        //call hello intent on startup
-        this.emit(":tell","Okay, ich breche hier ab.");
+    'AMAZON.HelpIntent': function() {
+        this.response.speak("Hilfe gibt es nicht!");
+        this.emit(':responseReady');
     },
-    "AMAZON.StopIntent": function () {
-        //call hello intent on startup
-        this.emit(":tell","Tschüss und besuche mich bald wieder, um die nächsten Abendteuer zu erleben!");
-    },
-    "AMAZON.HelpIntent": function () {
-        this.emit(":tell", "Hilfe!");
+    'AMAZON.StopIntent': function() {
+        this.response.speak("Auf wiedersehen.");
+        this.emit(':responseReady');
     },
     "SessionEndedRequest'": function () {
+        this.handler.state = undefined;
         this.emit(':saveState', true);
     },
     "Unhandled": function() {
-        var message = "Das habe ich nicht verstanden. Bitte gib die Antwort nochmal.";
-        this.emit(":ask", message, message);
+        var s = "Das habe ich nicht verstanden. Bitte sag wiederhole das.";
+
+        this.response.listen(s);
+
+        this.emit(":responseReady");
     }
 };
 
-var animalGuessingHandler = Alexa.CreateStateHandler(states.ANIMALGUESSMODE, {
-    "AnimalGuessIntent": function () {
-        //add logic for guessing the current anmial
-        this.emit(":tell", "Hello!");
+var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
+    'RightIntent': function() {
+        var s = resolveTextProperty("CORRECT", this);
+
+        this.attributes.adventure.score++;
+        s = askQuestion(s, this);
+
+        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
+            this.response.speak(s).listen();
+        else
+            this.response.speak(s);
+
+        this.emit(":responseReady");
     },
-    "SupportedAnimals": function () {
-        //add logic for guessing the current anmial
-        this.emit(":tell", "Hello!");
+    'WrongIntent': function() {
+        var s = resolveTextProperty("WRONG", this);
+
+        s = askQuestion(s, this);
+
+        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
+            this.response.speak(s).listen();
+        else
+            this.response.speak(s);
+
+        this.emit(":responseReady");
     },
     "Unhandled": function() {
         //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
         this.emit(":tell", "Hello!");
+    },
+    "SessionEndedRequest'": function () {
+        this.handler.state = undefined;
+        this.emit(':saveState', true);
     }
 });
+
+var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
+    'RightIntent': function() {
+        var s = resolveTextProperty("CORRECT", this);
+
+        this.attributes.adventure.score++;
+        s = askQuestion(s, this);
+
+        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
+            this.response.speak(s).listen();
+        else
+            this.response.speak(s);
+
+        this.emit(":responseReady");
+    },
+    'WrongIntent': function() {
+        var s = resolveTextProperty("WRONG", this);
+
+        s = askQuestion(s, this);
+
+        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
+            this.response.speak(s).listen();
+        else
+            this.response.speak(s);
+
+        this.emit(":responseReady");
+    },
+    "Unhandled": function() {
+        //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
+        this.emit(":tell", "Hello!");
+    },
+    "SessionEndedRequest'": function () {
+        this.handler.state = undefined;
+        this.emit(':saveState', true);
+    }
+});
+
+var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
+    'RightIntent': function() {
+        var s = resolveTextProperty("CORRECT", this);
+
+        this.attributes.adventure.score++;
+        s = askQuestion(s, this);
+
+        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
+            this.response.speak(s).listen();
+        else
+            this.response.speak(s);
+
+        this.emit(":responseReady");
+    },
+    'WrongIntent': function() {
+        var s = resolveTextProperty("WRONG", this);
+
+        s = askQuestion(s, this);
+
+        if(this.attributes.adventure.questions.length >= this.attributes.adventure.currentQuestion + 1)
+            this.response.speak(s).listen();
+        else
+            this.response.speak(s);
+
+        this.emit(":responseReady");
+    },
+    "Unhandled": function() {
+        //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
+        this.emit(":tell", "Hello!");
+    },
+    "SessionEndedRequest'": function () {
+        this.handler.state = undefined;
+        this.emit(':saveState', true);
+    }
+});
+
+function askQuestion(s, a) {
+    var q = {};
+
+    if(a.attributes.adventure.questions.length >= a.attributes.adventure.currentQuestion + 1) {
+        q = a.attributes.adventure.questions[a.attributes.adventure.currentQuestion++];
+        s += resolveTextPropertyWithValue(q.message, q.values, a);
+    } else {
+        q.type = "";
+        s += "Dein Abenteuer ist damit beendet. Du hast " + a.attributes.adventure.score + " von " + a.attributes.adventure.questions.length
+            + " Fragen richtig beantwortet. Sehr gut!";
+    }
+
+    setMode(q, a);
+
+    return s;
+}
 
 function createAdventure(continent) {
     //TODO Crappy as fuck, we need to think of a really good idea, this is just for testing
@@ -144,9 +262,9 @@ function createAdventure(continent) {
     adventure.start_safari = safariConfig[continent].start_safari;
 
     adventure.questions = [];
-    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["MATH"][0]), "MATH");
-    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["GUESS"][0]), "GUESS");
-    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["SPELL"][0]), "SPELL");
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["MATH"][0], "MATH", continent));
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["GUESS"][0], "GUESS", continent));
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["SPELL"][0], "SPELL", continent));
 
     adventure.currentQuestion = 0;
     adventure.score = 0;
@@ -154,35 +272,56 @@ function createAdventure(continent) {
     return adventure;
 }
 
-function createQuestion(selectedQ, type) {
+function createQuestion(selectedQ, type, continent) {
     var q = {};
     q.answer = selectedQ.answer;
+    q.type = type;
 
     var animals = [];
-    if(selectedQ.animals !== null) {
+    if(selectedQ.supportedAnimals) {
         animals = selectedQ.supportedAnimals;
     } else {
         animals = safariConfig[continent].supportedAnimals;
     }
-    var animal = animals[Math.floor(Math.random() * animals.length) + 1];
+    var animal = animals[Math.floor(Math.random() * animals.length)];
     q.values = [];
-    q.values.push(["ANIMALS", animal]);
+    q.values.push(["ANIMAL", animal]);
 
-    q.message = type + "." + selectedQ.id + ".VARIANT_" + (Math.floor(Math.random() * selectedQ.variants) + 1);
+    q.message = type + "." + selectedQ.id + ".VARIANT_" + (Math.floor(Math.random() * selectedQ.variants));
 
     return q
 }
 
 function resolveTextProperty(s, a) {
-    return a.t(s);
+    return a.t(s) + " ";
 }
 
 function resolveTextPropertyWithValue(s, p, a) {
     var message = a.t(s);
 
     p.forEach(function(e) {
-       message = message.replace("#" + e[0] + "#", e[1]);
+        message = replaceAll(message, "#" + e[0] + "#", e[1]);
     });
 
-    return message
+    return message + " ";
+}
+
+function setMode(q, a) {
+    switch (q.type) {
+        case "MATH":
+            a.handler.state = states.MATHMODE;
+            break;
+        case "GUESS":
+            a.handler.state = states.GUESSMODE;
+            break;
+        case "SPELL":
+            a.handler.state = states.SPELLMODE;
+            break;
+        default:
+            a.handler.state = undefined;
+    }
+}
+
+function replaceAll(str, find, replace) {
+    return str.replace(new RegExp(find, 'g'), replace);
 }

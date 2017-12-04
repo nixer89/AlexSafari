@@ -4,13 +4,13 @@ exports.getSafariConfig = function() {
 
 var adventure = {
     "supportContinents" : ["Africa", "Europe", "Asia","Australia", "America"],
-    "Africa" : {
+    "Afrika" : {
         "title": "african safari",
         "supportedAnimals" : ["elephant", "lion", "zebra", "hippo"],
         "start_safari": "START_AFRICA",
         "level" : [{
             "level": 1,
-            "questions" : [{
+            "questions" : {
                 "MATH" : [{
                     "id": "WATERHOLE_COUNT",
                     "supportedAnimals" : ["elephant", "hippo"],
@@ -26,7 +26,7 @@ var adventure = {
                     "answer": "elephant",
                     "variants": 1
                 }]
-            }]
+            }
         }]
     }
 };

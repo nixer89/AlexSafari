@@ -29,28 +29,32 @@ var languageProperties = {
     },
     'de-DE': {
         'translation': {
-            'SAY_HELLO_MESSAGE' : 'Hallo! Willkommen zu deiner persönlichen Safari! Bitte nenne mir zuerst den Kontinent, den du besuchen willst.',
-            'CONTINUE' : "Du hast deine letzte Safari nicht zu Ende gebracht, willst du dort weiter machen wo du aufgehört hast?",
-            'CONTINENT_NOT_SUPPORTED' : "Tut mir Leid, ich unterstütze momentan nur den Kontinent Afrika.",
+            'SAY_HELLO_MESSAGE' : 'Hallo! Willkommen zu deiner persönlichen Safari! Ich glaube ich habe deinen Namen nicht ganz verstanden, wie war der noch gleich?',
+            'CONTINUE' : "Hallo #NAME#. Du hast deine letzte Safari nicht zu Ende gebracht, willst du dort weiter machen wo du aufgehört hast?",
+            'SELECT_CONTINENT' : "Danke #NAME#. Bitte nenne mir zuerst den Kontinent, den du besuchen willst.",
+            'CONTINENT_NOT_SUPPORTED' : "Tut mir Leid, ich unterstütze momentan nur den Kontinent Afrika. Bitte wähle einen anderen Kontinent.",
             'CONTINENT_CHOSEN': "Super! Du hast dich für #CONTINENT# entschieden!",
             'START_AFRICA': 'Du läufst durch die dicht mit Bäumen bewachsene Savanne Afrikas.',
 
+            'WRONG' : 'Tut mir Leid, das war leider falsch.',
+            'CORRECT' : 'Richtig, sehr gut!',
+
             'MATH' : {
                 'WATERHOLE_COUNT' : {
-                    '1' : "Du kommst an ein Wasserloch. <audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Dort stehen zwei #ANIMAL# mit ihren fünf Kindern. Wie viele #ANIMAL#s sind es insgesamt?",
-                    '2' : "Dort ist ein großes Wasserloch! Wow schau dir den mächtigen Papa #ANIMAL# an. <audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Er ist mit seinen zwei Kindern dort. Kannst du mir sagen wie viele #ANIMAL#s es insgesamt sind?"
+                    'VARIANT_0' : "Du kommst an ein Wasserloch. <audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Dort stehen zwei #ANIMAL# mit ihren fünf Kindern. Wie viele #ANIMAL#s sind es insgesamt?",
+                    'VARIANT_1' : "Dort ist ein großes Wasserloch! Wow schau dir den mächtigen Papa #ANIMAL# an. <audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Er ist mit seinen zwei Kindern dort. Kannst du mir sagen wie viele #ANIMAL#s es insgesamt sind?"
                 }
             },
 
             'GUESS' : {
                 'SIMPLE_GUESS' : {
-                    '1' : "Welches Tier macht dieses Geräusch?<audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Hast du es erkannt?"
+                    'VARIANT_0' : "Welches Tier macht dieses Geräusch?<audio src='S3_BUCKET_URL_#ANIMAL#.mp3'/> Hast du es erkannt?"
                 }
             },
 
             'SPELL' : {
                 'SIMPLE_SPELL' : {
-                    '2' : "Kannst du #ANIMAL# buchstabieren?"
+                    'VARIANT_0' : "Kannst du #ANIMAL# buchstabieren?"
                 }
             }
         }
