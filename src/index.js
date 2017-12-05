@@ -63,11 +63,13 @@ var newSessionHandler = {
             this.emit(':tell', error_text);
         }
 
-        if(Object.keys(this.attributes).length === 0 || this.attribues.currentQuestion == this.attributs.questions.length + 1) {
-            if(!this.score) {
+        if(Object.keys(this.attributes).length === 0 || this.attributes.adventure.currentQuestion == this.attributes.adventure.questions.length + 1) {
+            if(!this.attributes.adventure || !this.attributes.adventure.score) {
                 this.response.speak(resolveTextProperty("SAY_HELLO_MESSAGE", this)).listen();
             } else {
                 this.response.speak("Wilkommen zurück! Bist du bereit für eine neue Safaritour? Dann verrate mir doch bitte zuerst deinen Namen.").listen();
+                this.attributes.name = null;
+                this.attributes.age = null;
             }
 
             this.handler.state = states.CONFIGMODE;
@@ -118,7 +120,6 @@ var configHandler = Alexa.CreateStateHandler(states.CONFIGMODE, {
         if(this.attributes.name && !this.attributes.age) {
             this.response.speak("Ja, deinen Namen kenne ich bereits. Bitte nenne mir dein Alter.").listen();
         } else if (this.attributes.name && this.attributes.age) {
-            this.response.speak("Ja, dein Alter kenne ich bereits. Bitte nenne mir deinen Namen.").listen();
             this.response.speak("Ja, Alter und Name kenne ich bereits. Wähle bitte den Kontinent, auf den die Reise gehen soll!").listen();
         } else {
             var firstName = this.event.request.intent.slots.firstName.value;
@@ -138,7 +139,7 @@ var configHandler = Alexa.CreateStateHandler(states.CONFIGMODE, {
             var age = this.event.request.intent.slots.age.value;
             this.attributes.age = age;
 
-            this.response.speak(resolveTextPropertyWithValue("SELECT_CONTINENT", [["NAME", firstName]], this)).listen();
+            this.response.speak(resolveTextPropertyWithValue("SELECT_CONTINENT", [["NAME", this.attributes.name]], this)).listen();
         }
 
         this.emit(":responseReady");
