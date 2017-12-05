@@ -29,7 +29,7 @@ var languageProperties = {
     },
     'de-DE': {
         'translation': {
-            'SAY_HELLO_MESSAGE' : 'Hallo! Willkommen zu deiner persönlichen Safari! Ich glaube ich habe deinen Namen nicht ganz verstanden, wie war der noch gleich?',
+            'SAY_HELLO_MESSAGE' : 'Hallo! Willkommen zu deiner persönlichen Safari! Ich glaube ich habe deinen Namen und dein Alter nicht ganz verstanden, wie war das noch gleich?',
             'CONTINUE' : "Hallo #NAME#. Du hast deine letzte Safari nicht zu Ende gebracht, willst du dort weiter machen wo du aufgehört hast?",
             'SELECT_CONTINENT' : "Danke #NAME#. Bitte nenne mir zuerst den Kontinent, den du besuchen willst.",
             'CONTINENT_NOT_SUPPORTED' : "Tut mir Leid, ich unterstütze momentan nur den Kontinent Afrika. Bitte wähle einen anderen Kontinent.",

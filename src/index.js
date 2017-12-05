@@ -39,7 +39,8 @@ if (S3_BUCKET) {
 var states = {
     GUESSMODE: "_GUESSMODE", // User is trying to guess an animal
     SPELLMODE: "_SPELLMODE", // User is trying to guess the number.
-    MATHMODE: "_MATHMODE" // User is trying to spell some name
+    MATHMODE: "_MATHMODE", // User is trying to spell some name
+    CONFIGMODE: "_CONFIGMODE", // Configure Name and Age
 };
 
 exports.handler = function(event, context, callback) {
@@ -52,7 +53,7 @@ exports.handler = function(event, context, callback) {
     alexa.appId = APP_ID;
     alexa.dynamoDBTableName = 'AlexaSafari';
     alexa.resources = languageConfigFile.getLanguageProperties();
-    alexa.registerHandlers(newSessionHandler, guessHandler, spellHandler, mathHandler);
+    alexa.registerHandlers(newSessionHandler, guessHandler, spellHandler, mathHandler, configHandler);
     alexa.execute();
 };
 
@@ -62,51 +63,32 @@ var newSessionHandler = {
             this.emit(':tell', error_text);
         }
 
-        if(Object.keys(this.attributes).length === 0) {
-            this.response.speak(resolveTextProperty("SAY_HELLO_MESSAGE", this)).listen();
+        if(Object.keys(this.attributes).length === 0 || this.attribues.currentQuestion == this.attributs.questions.length + 1) {
+            if(!this.score) {
+                this.response.speak(resolveTextProperty("SAY_HELLO_MESSAGE", this)).listen();
+            } else {
+                this.response.speak("Wilkommen zurück! Bist du bereit für eine neue Safaritour? Dann verrate mir doch bitte zuerst deinen Namen.").listen();
+            }
+
+            this.handler.state = states.CONFIGMODE;
         } else {
             this.response.speak(resolveTextPropertyWithValue("CONTINUE", [["NAME", this.attributes.name]], this)).listen();
         }
 
         this.emit(":responseReady");
     },
-    "FirstNameIntent": function () {
-        var firstName = this.event.request.intent.slots.firstName.value;
-        this.attributes.name = firstName;
-
-        this.response.speak(resolveTextPropertyWithValue("SELECT_CONTINENT", [["NAME", firstName]], this)).listen();
-        this.emit(":responseReady");
-    },
-    "ContinentIntent": function() {
-        var continent = this.event.request.intent.slots.continent.value;
-
-        if(continent !== "Afrika") {
-            this.response.speak(resolveTextProperty("CONTINENT_NOT_SUPPORTED", this)).listen();
-        } else {
-            var adventure = createAdventure(continent);
-            this.attributes.adventure = adventure;
-
-            var s = resolveTextPropertyWithValue("CONTINENT_CHOSEN", [["CONTINENT", continent]], this);
-            s += resolveTextProperty(adventure.start_safari, this);
-
-            s = askQuestion(s, this);
-
-            this.response.speak(s).listen();
-        }
-
-        this.emit(":responseReady");
-    },
-    'RightIntent': function() {
+    'AMAZON.YesIntent': function() {
         var s = "Okay, dann lass uns da weiter machen, wo du aufgehört hast!";
 
-        s = askQuestion(s, this);
+        s = askNextQuestion(s, this);
 
         this.response.speak(s).listen();
         this.emit(":responseReady");
     },
-    'WrongIntent': function() {
+    'AMAZON.NoIntent': function() {
         this.attributes.adventure = {};
-        this.response.speak("Also gut, starten wir eine neue Safari! Bitte nenne mir zuerst deinen Namen.").listen();
+        this.response.speak("Also gut, starten wir eine neue Safari! Bitte nenne mir zuerst deinen Namen und dein Alter.").listen();
+        this.handler.state = states.CONFIGMODE;
         this.emit(':responseReady');
     },
     'AMAZON.HelpIntent': function() {
@@ -131,12 +113,94 @@ var newSessionHandler = {
     }
 };
 
+var configHandler = Alexa.CreateStateHandler(states.CONFIGMODE, {
+    "FirstNameIntent": function () {
+        if(this.attributes.name && !this.attributes.age) {
+            this.response.speak("Ja, deinen Namen kenne ich bereits. Bitte nenne mir dein Alter.").listen();
+        } else if (this.attributes.name && this.attributes.age) {
+            this.response.speak("Ja, dein Alter kenne ich bereits. Bitte nenne mir deinen Namen.").listen();
+            this.response.speak("Ja, Alter und Name kenne ich bereits. Wähle bitte den Kontinent, auf den die Reise gehen soll!").listen();
+        } else {
+            var firstName = this.event.request.intent.slots.firstName.value;
+            this.attributes.name = firstName;
+
+            this.response.speak("Danke " + firstName + ". Verrätst du mir nun auch noch dein Alter?").listen();
+        }
+
+        this.emit(":responseReady");
+    },
+    "AgeIntent": function () {
+        if(!this.attributes.name && this.attributes.age) {
+            this.response.speak("Ja, dein Alter kenne ich bereits. Bitte nenne mir deinen Namen.").listen();
+        } else if (this.attributes.name && this.attributes.age) {
+            this.response.speak("Ja, Alter und Name kenne ich bereits. Wähle bitte den Kontinent, auf den die Reise gehen soll!").listen();
+        } else {
+            var age = this.event.request.intent.slots.age.value;
+            this.attributes.age = age;
+
+            this.response.speak(resolveTextPropertyWithValue("SELECT_CONTINENT", [["NAME", firstName]], this)).listen();
+        }
+
+        this.emit(":responseReady");
+    },
+    "ContinentIntent": function() {
+        if(!this.attributes.name || !this.attributes.age) {
+            this.response.speak("Ich glaube du hast mir deinen Namen noch nicht verraten, wie heißt du denn?").listen();
+        } else if (!this.attributes.age) {
+            this.response.speak("Ich glaube du hast mir dein Alter noch nicht verraten, wie alt bist du denn?").listen();
+        } else {
+            var continent = this.event.request.intent.slots.continent.value;
+
+            if(continent !== "Afrika") {
+                this.response.speak(resolveTextProperty("CONTINENT_NOT_SUPPORTED", this)).listen();
+            } else {
+                var adventure = createAdventure(continent);
+                this.attributes.adventure = adventure;
+
+                var s = resolveTextPropertyWithValue("CONTINENT_CHOSEN", [["CONTINENT", continent]], this);
+                s += resolveTextProperty(adventure.start_safari, this);
+
+                s = askNextQuestion(s, this);
+
+                this.response.speak(s).listen();
+            }
+        }
+
+        this.emit(":responseReady");
+    }
+});
+
+var adventureHandler = Alexa.CreateStateHandler(states.ADVENTUREMODE, {
+    "FirstNameIntent": function () {
+        if(this.attributes.name) {
+            this.response.speak("Ja, deinen Namen kenne ich bereits. Wähle bitte einen Kontinent").listen();
+        }
+
+        var firstName = this.event.request.intent.slots.firstName.value;
+        this.attributes.name = firstName;
+
+        this.response.speak(resolveTextPropertyWithValue("SELECT_CONTINENT", [["NAME", firstName]], this)).listen();
+        this.emit(":responseReady");
+    },
+    "AgeIntent": function () {
+        if(this.attributes.name) {
+            this.response.speak("Ja, deinen Namen kenne ich bereits. Wähle bitte einen Kontinent").listen();
+        }
+
+        var firstName = this.event.request.intent.slots.firstName.value;
+        this.attributes.name = firstName;
+
+        this.response.speak(resolveTextPropertyWithValue("SELECT_CONTINENT", [["NAME", firstName]], this)).listen();
+        this.emit(":responseReady");
+    }
+});
+
 var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
     'RightIntent': function() {
         var s = resolveTextProperty("CORRECT", this);
 
         this.attributes.adventure.score++;
-        s = askQuestion(s, this);
+        s = askNextQuestion(s, this);
 
         if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
@@ -148,7 +212,7 @@ var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
     'WrongIntent': function() {
         var s = resolveTextProperty("WRONG", this);
 
-        s = askQuestion(s, this);
+        s = askNextQuestion(s, this);
 
         if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion)
             this.response.speak(s);
@@ -176,7 +240,7 @@ var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
         var s = resolveTextProperty("CORRECT", this);
 
         this.attributes.adventure.score++;
-        s = askQuestion(s, this);
+        s = askNextQuestion(s, this);
 
         if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
@@ -188,7 +252,7 @@ var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
     'WrongIntent': function() {
         var s = resolveTextProperty("WRONG", this);
 
-        s = askQuestion(s, this);
+        s = askNextQuestion(s, this);
 
         if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
@@ -216,7 +280,7 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
         var s = resolveTextProperty("CORRECT", this);
 
         this.attributes.adventure.score++;
-        s = askQuestion(s, this);
+        s = askNextQuestion(s, this);
 
         if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
@@ -228,7 +292,7 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
     'WrongIntent': function() {
         var s = resolveTextProperty("WRONG", this);
 
-        s = askQuestion(s, this);
+        s = askNextQuestion(s, this);
 
         if(this.attributes.adventure.questions.length === this.attributes.adventure.currentQuestion-1)
             this.response.speak(s);
@@ -251,7 +315,7 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
     }
 });
 
-function askQuestion(s, a) {
+function askNextQuestion(s, a) {
     var q = {};
 
     if(a.attributes.adventure.questions.length === a.attributes.adventure.currentQuestion) {
