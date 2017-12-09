@@ -41,7 +41,15 @@ var states = {
     STARTMODE: "_STARTMODE",  // Prompt the user to start or restart the game.
     ANIMALGUESSMODE: "_ANIMALGUESSING", // User is trying to guess an animal
     NUMBERGUESSMODE: "_NUMBERGUESSING", // User is trying to guess the number.
-    SPELLMODE: "_SPELLING" // User is trying to spell some name
+    SPELLMODE_1: "_SPELLING_1",
+    SPELLMODE_2: "_SPELLING_2",
+    SPELLMODE_3: "_SPELLING_3",
+    SPELLMODE_4: "_SPELLING_4",
+    SPELLMODE_5: "_SPELLING_5",
+    SPELLMODE_6: "_SPELLING_6",
+    SPELLMODE_7: "_SPELLING_7",
+    SPELLMODE_8: "_SPELLING_8",
+    SPELLMODE_9: "_SPELLING_9" // User is trying to spell some name
 };
 
 exports.handler = function(event, context, callback) {
@@ -54,7 +62,7 @@ exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
     alexa.appId = APP_ID;
     alexa.resources = languageConfigFile.getLanguageProperties();
-    alexa.registerHandlers(testHandler, animalGuessingHandler);
+    alexa.registerHandlers(testHandler, animalGuessingHandlerMode1);
     alexa.execute();
 };
 
@@ -74,7 +82,7 @@ var testHandler = {
         elephant_start = elephant_start.replace('ANIMAL',safariConfig.Africa.elephant.name);
         elephant_end = elephant_end.replace('ANIMAL',safariConfig.Africa.elephant.name);
 
-        this.handler.state = states.SPELLMODE;
+        this.handler.state = states.SPELLMODE_5;
 
         this.emit(":ask", elephant_end, "test");
         //this.emit(":ask", elephant_start + elephant_end, "test");
@@ -136,7 +144,7 @@ var testHandler = {
     "AMAZON.HelpIntent": function () {
         this.emit(":tell", "Hilfe!");
     },
-    "EndedRequest'": function () {
+    "SessionEndedRequest": function () {
         //do we need proper  ending request? like storing current progress?
 
         //this.emit(":tell", "Bye!");
@@ -184,7 +192,7 @@ var standardHandler = Alexa.CreateStateHandler(states.STARTMODE, {
     "AMAZON.HelpIntent": function () {
         this.emit(":tell", "Hilfe!");
     },
-    "EndedRequest'": function () {
+    "SessionEndedRequest": function () {
         //do we need proper  ending request? like storing current progress?
 
         //this.emit(":tell", "Bye!");
@@ -210,12 +218,12 @@ var animalGuessingHandler = Alexa.CreateStateHandler(states.ANIMALGUESSMODE, {
     },
 });
 
-var animalGuessingHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
-    "LetterIntent": function () {
+var animalGuessingHandlerMode1 = Alexa.CreateStateHandler(states.SPELLMODE_5, {
+    "LetterIntentFuenf": function () {
         var currentAnimal = "elefant".toLowerCase();
         var currentProgress = this.attributes.spelledAnimal || "";
         //add logic for guessing the current anmial
-        var whatAlexaUnderstood = checkForLetterIntent(this.event.request.intent.slots, this);
+        var whatAlexaUnderstood = checkForLetterIntent(this.event.request.intent.slots);
 
         console.log("what alexa understood: " + whatAlexaUnderstood);
         console.log("current progress spelling: " + currentProgress);
@@ -229,15 +237,17 @@ var animalGuessingHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
             this.emit(":tell", "Hey, das hast du super gemacht! Das war komplett richtig! Glückwunsch!");
 
         } else if(currentAnimal.indexOf(currentProgress) == 0) {
-            var responseSpeech = "Bis jetzt ist alles richtig. Ich habe verstanden: ";
-            var letterArray = currentProgress.split('');
-            for (var i = 0, len = letterArray.length; i < len; i++) {
-                responseSpeech += "<break time=\"200ms\"/>" + letterArray[i];
-            }
-            responseSpeech += ". Wie geht es weiter?";
-            this.attributes.spelledAnimal = currentProgress;
+            var responseSpeech = whatAlexaUnderstood;
 
-            this.emit(":ask", responseSpeech, responseSpeech);
+            var repromptSpeech = "Bis jetzt ist alles richtig. Ich habe verstanden: ";
+            var letterArray = currentProgress.split('');
+            for (var i = 0, len = letterArray.length; i < len   ; i++) {
+                repromptSpeech += "<break time=\"200ms\"/>" + letterArray[i];
+            }
+            repromptSpeech += ". Wie geht es weiter?";
+            
+            this.attributes.spelledAnimal = currentProgress;
+            this.emit(":ask", responseSpeech, repromptSpeech);
         } else {
             this.attributes.askForRepeat = true;
             this.attributes.spelledAnimal = "";
@@ -270,7 +280,8 @@ var animalGuessingHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
     },
     "Unhandled": function() {
         //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
-        this.emit(":tell", "Hello!");
+        console.log("filled slots: " + JSON.stringify(this.event.request.intent.slots));
+        this.emit(":tell", "Das habe ich leider nicht verstanden!");
     },
 });
 
@@ -288,7 +299,7 @@ function checkForLetterIntent(slots, skill) {
                 skill.attributes.spelledAnimal += whatAlexaUnderstood;
                 var responseSpeech = "Tut mir leid, da habe ich etwas nicht verstanden. Bisher habe ich verstanden: ";
                 var letterArray = this.attributes.spelledAnimal.split('');
-                for (var i = 0, len = letterArray.length; i < len; i++) {
+                for (var i = 0, len2 = letterArray.length; i < len2; i++) {
                     responseSpeech += "<break time=\"200ms\"/>" + letterArray[i];
                 }
                 responseSpeech += ". Wie geht es weiter?";
