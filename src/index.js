@@ -345,3 +345,96 @@ function setMode(q, a) {
 function replaceAll(str, find, replace) {
     return str.replace(new RegExp(find, 'g'), replace);
 }
+
+var animalGuessingHandlerMode1 = Alexa.CreateStateHandler(states.SPELLMODE_5, {
+    "LetterIntentFuenf": function () {
+        var currentAnimal = "elefant".toLowerCase();
+        var currentProgress = this.attributes.spelledAnimal || "";
+        //add logic for guessing the current anmial
+        var whatAlexaUnderstood = checkForLetterIntent(this.event.request.intent.slots);
+
+        console.log("what alexa understood: " + whatAlexaUnderstood);
+        console.log("current progress spelling: " + currentProgress);
+        console.log("current animal to guess: " + currentAnimal);
+
+        currentProgress += whatAlexaUnderstood.toLowerCase();
+
+        console.log("current progress with new alexa understanding: " + currentProgress);
+
+        if(currentAnimal == currentProgress) {
+            this.emit(":tell", "Hey, das hast du super gemacht! Das war komplett richtig! Glückwunsch!");
+
+        } else if(currentAnimal.indexOf(currentProgress) == 0) {
+            var responseSpeech = whatAlexaUnderstood;
+
+            var repromptSpeech = "Bis jetzt ist alles richtig. Ich habe verstanden: ";
+            var letterArray = currentProgress.split('');
+            for (var i = 0, len = letterArray.length; i < len   ; i++) {
+                repromptSpeech += "<break time=\"200ms\"/>" + letterArray[i];
+            }
+            repromptSpeech += ". Wie geht es weiter?";
+            
+            this.attributes.spelledAnimal = currentProgress;
+            this.emit(":ask", responseSpeech, repromptSpeech);
+        } else {
+            this.attributes.askForRepeat = true;
+            this.attributes.spelledAnimal = "";
+            this.emit(":ask", "Das ist leider falsch. Möchtest du es noch einmal versuchen?");
+        }
+    },
+    "AMAZON.YesIntent": function () {
+        if(this.attributes.askForRepeat) {
+            this.attributes.spelledAnimal = "";
+            this.emit(":ask", "Ok, versuchen wir es nochmal. Wie buchstabiert man Elefant?", "Wie buchstabiert man Elefant?");
+        } else {
+            this.emit(":ask", "Ok, wie buchstabiert man Elefant?", "Wie buchstabiert man Elefant?");
+        }
+        //add logic for guessing the current anmial
+        this.emit(":tell", "Hello!");
+    },
+    "AMAZON.NoIntent": function () {
+        //add logic for guessing the current anmial
+        var currentAnimal = "elefant";
+        var spellingOutput = "";
+        var letterArray = currentAnimal.split('');
+        console.log("letterArray = " + letterArray);
+        for (var i = 0, len = letterArray.length; i < len; i++) {
+            spellingOutput += " <break time=\"200ms\"/> " + letterArray[i];
+        }
+
+        console.log("speechOutput = " + spellingOutput + ". " + currentAnimal);
+
+        this.emit(":tell", "Ok, kein Problem. Dann sage ich es dir: " + spellingOutput);
+    },
+    "Unhandled": function() {
+        //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
+        console.log("filled slots: " + JSON.stringify(this.event.request.intent.slots));
+        this.emit(":tell", "Das habe ich leider nicht verstanden!");
+    },
+});
+
+function checkForLetterIntent(slots, skill) {
+    console.log("filled slots: " + JSON.stringify(slots));
+    var slotAppender = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+    var whatAlexaUnderstood = ""; 
+    for (var i = 0, len = slotAppender.length; i < len; i++) {
+        console.log("index letter = " + 'letter'+slotAppender[i]);
+        if(slots['letter'+slotAppender[i]] && slots['letter'+slotAppender[i]].value)
+        {
+            if(slots['letter'+slotAppender[i]].resolutions.resolutionsPerAuthority[0].status.code == "ER_SUCCESS_MATCH")
+                whatAlexaUnderstood += slots['letter'+slotAppender[i]].resolutions.resolutionsPerAuthority[0].values[0].value.name;
+            else {
+                skill.attributes.spelledAnimal += whatAlexaUnderstood;
+                var responseSpeech = "Tut mir leid, da habe ich etwas nicht verstanden. Bisher habe ich verstanden: ";
+                var letterArray = this.attributes.spelledAnimal.split('');
+                for (var i = 0, len2 = letterArray.length; i < len2; i++) {
+                    responseSpeech += "<break time=\"200ms\"/>" + letterArray[i];
+                }
+                responseSpeech += ". Wie geht es weiter?";
+                skill.emit(":ask", responseSpeech);
+            }
+        }
+    }
+
+    return whatAlexaUnderstood;
+}
