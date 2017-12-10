@@ -14,6 +14,7 @@ var adventure = {
                 "MATH" : [{
                     "id": "WATERHOLE_COUNT",
                     "supportedAnimals" : ["elephant", "hippo"],
+                    "answer": "#NUMBER_0#+#NUMBER_1#",
                     "variants": 2
                 }],
                 "GUESS" : [{

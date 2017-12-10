@@ -2,6 +2,7 @@
 'use strict';
 var Alexa = require('alexa-sdk');
 const AWS = require('aws-sdk');
+const math = require('mathjs');
 var languageFilePrototype = require('./language_properties');
 var configFile = require('./safariConfig');
 var s3 = new AWS.S3();
@@ -97,7 +98,10 @@ var newSessionHandler = {
         askNextQuestion(s, this);
     },
     'AMAZON.NoIntent': function() {
-        this.attributes.adventure = {};
+        this.attributes.name = null;
+        this.attributes.age = null;
+        this.attributes.adventure = null;
+
         this.response.speak("Also gut, starten wir eine neue Safari! Bitte nenne mir zuerst deinen Namen und dein Alter.").listen("Wie bitte?");
         this.handler.state = states.CONFIGMODE;
         this.emit(':responseReady');
@@ -112,11 +116,10 @@ var newSessionHandler = {
     },
     "SessionEndedRequest": function () {
         this.handler.state = '';
-        console.log("Main State");
         this.emit(':saveState', true);
     },
     "Unhandled": function() {
-        var s = "Das habe ich nicht verstanden. Bitte sag das noch einmal.";
+        var s = "Default Das habe ich nicht verstanden. Bitte sag das noch einmal.";
 
         this.response.speak(s).listen("Wie bitte?");
 
@@ -179,19 +182,21 @@ var configHandler = Alexa.CreateStateHandler(states.CONFIGMODE, {
 });
 
 var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
-    'RightIntent': function() {
-        var s = resolveTextProperty("CORRECT", this);
+    'GuessIntent': function() {
+        var animal = this.event.request.intent.slots.animal.value;
 
-        this.attributes.adventure.score++;
-        askNextQuestion(s, this);
-    },
-    'WrongIntent': function() {
-        var s = resolveTextProperty("WRONG", this);
+        var s = "";
+        if(animal === this.attributes.adventure.questions[this.attributes.adventure.currentQuestion].animal) {
+            s = resolveTextProperty("CORRECT", this);
+            this.attributes.adventure.score++;
+        } else {
+            s = resolveTextProperty("WRONG", this);
+        }
 
         askNextQuestion(s, this);
     },
     "Unhandled": function() {
-        var s = "Das habe ich nicht verstanden. Bitte sag das noch einmal.";
+        var s = "Raten Das habe ich nicht verstanden. Bitte sag das noch einmal.";
 
         this.response.speak(s).listen("Wie bitte?");
 
@@ -205,19 +210,23 @@ var guessHandler = Alexa.CreateStateHandler(states.GUESSMODE, {
 });
 
 var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
-    'RightIntent': function() {
-        var s = resolveTextProperty("CORRECT", this);
+    'AgeIntent': function() {
+        var number = this.event.request.intent.slots.age.value;
 
-        this.attributes.adventure.score++;
-        askNextQuestion(s, this);
-    },
-    'WrongIntent': function() {
-        var s = resolveTextProperty("WRONG", this);
+        var s = "";
+        if(number == math.eval(this.attributes.adventure.questions[this.attributes.adventure.currentQuestion-1].answer)){
+            s = resolveTextProperty("CORRECT", this);
+            this.attributes.adventure.score++;
+        } else {
+            s = resolveTextProperty("WRONG", this);
+
+            s += math.eval(this.attributes.adventure.questions[this.attributes.adventure.currentQuestion-1].answer) + " wäre die richtige Antwort gewesen.";
+        }
 
         askNextQuestion(s, this);
     },
     "Unhandled": function() {
-        var s = "Das habe ich nicht verstanden. Bitte sag das noch einmal.";
+        var s = "Mathe Das habe ich nicht verstanden. Bitte sag das noch einmal.";
 
         this.response.speak(s).listen("Wie bitte?");
 
@@ -302,7 +311,7 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
         askNextQuestion(s, this);
     },
     "Unhandled": function() {
-        var s = "Das habe ich nicht verstanden. Bitte sag das noch einmal.";
+        var s = "Buchstabieren Das habe ich nicht verstanden. Bitte sag das noch einmal.";
 
         this.response.speak(s).listen("Wie bitte?");
 
@@ -370,11 +379,22 @@ function createQuestion(selectedQ, type, animal) {
     var q = {};
     q.answer = selectedQ.answer;
     q.type = type;
+    q.animal = animal;
 
     q.values = [];
     q.values.push(["ANIMAL", animal]);
 
     q.message = type + "." + selectedQ.id + ".VARIANT_" + (Math.floor(Math.random() * selectedQ.variants));
+
+    if(type === "MATH") {
+        var i = 0;
+        while(q.answer.indexOf("#NUMBER_" + i + "#") > -1) {
+            var n = Math.floor(Math.random() * 9);
+            q.answer = q.answer.replace("#NUMBER_" + i + "#", n);
+            q.values.push(["NUMBER_" + i, n]);
+            i++;
+        }
+    }
 
     return q
 }
