@@ -49,191 +49,191 @@
         ]
       },
       {
-      "name": "someLetter",
-      "values": [
-        {
-          "id": null,
-          "name": {
-            "value": "a",
-            "synonyms": []
+        "name": "someLetter",
+        "values": [
+          {
+            "id": null,
+            "name": {
+              "value": "a",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "b",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "c",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "d",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "e",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "f",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "g",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "h",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "i",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "j",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "k",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "l",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "m",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "n",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "o",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "p",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "q",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "r",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "s",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "t",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "u",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "v",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "w",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "x",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "y",
+              "synonyms": []
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "z",
+              "synonyms": []
+            }
           }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "b",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "c",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "d",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "e",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "f",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "g",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "h",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "i",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "j",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "k",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "l",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "m",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "n",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "o",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "p",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "q",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "r",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "s",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "t",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "u",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "v",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "w",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "x",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "y",
-            "synonyms": []
-          }
-        },
-        {
-          "id": null,
-          "name": {
-            "value": "z",
-            "synonyms": []
-          }
-        }
-      ]
+        ]
       }
     ],
     "intents": [
@@ -258,7 +258,15 @@
         "samples": []
       },
       {
+        "name": "AMAZON.NoIntent",
+        "samples": []
+      },
+      {
         "name": "AMAZON.StopIntent",
+        "samples": []
+      },
+      {
+        "name": "AMAZON.YesIntent",
         "samples": []
       },
       {
@@ -284,20 +292,6 @@
             "type": "AMAZON.DE_FIRST_NAME"
           }
         ]
-      },
-      {
-        "name": "RightIntent",
-        "samples": [
-          "Richtig"
-        ],
-        "slots": []
-      },
-      {
-        "name": "WrongIntent",
-        "samples": [
-          "Falsch"
-        ],
-        "slots": []
       },
       {
         "name": "LetterIntent",
@@ -342,8 +336,22 @@
             "type": "someLetter"
           }
         ]
+      },
+      {
+        "name": "RightIntent",
+        "samples": [
+          "Richtig"
+        ],
+        "slots": []
+      },
+      {
+        "name": "WrongIntent",
+        "samples": [
+          "Falsch"
+        ],
+        "slots": []
       }
     ],
-    "invocationName": "meine super safari"
+    "invocationName": "safari"
   }
 }

@@ -13,7 +13,7 @@ var adventure = {
             "questions" : {
                 "MATH" : [{
                     "id": "WATERHOLE_COUNT",
-                    "supportedAnimals" : ["elephant", "hippo"],
+                    "supportedAnimals" : ["elephant"],
                     "variants": 2
                 }],
                 "GUESS" : [{

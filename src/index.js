@@ -231,8 +231,13 @@ var mathHandler = Alexa.CreateStateHandler(states.MATHMODE, {
 });
 
 var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
-    "LetterIntentFuenf": function () {
-        var currentAnimal = "elefant".toLowerCase();
+    "LetterIntent": function () {
+        var adventureQuestions = this.attributes.adventure.questions;
+        console.log("adventureQuestions" + adventureQuestions);
+        var currentQuestion = adventureQuestions[this.attributes.adventure.currentQuestion];
+        console.log("currentQuestion" + currentQuestion);
+        var currentAnimal = currentQuestion.animal;
+        console.log("currentAnimal" + currentAnimal);
         var currentProgress = this.attributes.spelledAnimal || "";
         //add logic for guessing the current anmial
         var whatAlexaUnderstood = checkForLetterIntent(this.event.request.intent.slots);
@@ -246,7 +251,7 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
         console.log("current progress with new alexa understanding: " + currentProgress);
 
         if(currentAnimal == currentProgress) {
-            this.emit(":tell", "Hey, das hast du super gemacht! Das war komplett richtig! Glückwunsch!");
+            askNextQuestion("Hey, das hast du super gemacht! Das war komplett richtig! Glückwunsch!", this);
 
         } else if(currentAnimal.indexOf(currentProgress) == 0) {
             var responseSpeech = whatAlexaUnderstood;
@@ -273,8 +278,6 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
         } else {
             this.emit(":ask", "Ok, wie buchstabiert man Elefant?", "Wie buchstabiert man Elefant?");
         }
-        //add logic for guessing the current anmial
-        this.emit(":tell", "Hello!");
     },
     "AMAZON.NoIntent": function () {
         //add logic for guessing the current anmial
@@ -288,18 +291,15 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
 
         console.log("speechOutput = " + spellingOutput + ". " + currentAnimal);
 
-        this.emit(":tell", "Ok, kein Problem. Dann sage ich es dir: " + spellingOutput);
+        askNextQuestion( "Ok, kein Problem. Dann sage ich es dir: " + spellingOutput + ". " + currentAnimal + ". ", this);
     },
-    'RightIntent': function() {
-        var s = resolveTextProperty("CORRECT", this);
-
-        this.attributes.adventure.score++;
-        askNextQuestion(s, this);
+    'AMAZON.StopIntent': function() {
+        this.response.speak("Auf wiedersehen.");
+        this.emit(':responseReady');
     },
-    'WrongIntent': function() {
-        var s = resolveTextProperty("WRONG", this);
-
-        askNextQuestion(s, this);
+    'AMAZON.CancelIntent': function() {
+        this.response.speak("Auf wiedersehen.");
+        this.emit(':responseReady');
     },
     "Unhandled": function() {
         var s = "Das habe ich nicht verstanden. Bitte sag das noch einmal.";
@@ -346,7 +346,7 @@ function createAdventure(continent) {
 
     adventure.questions = [];
 
-    var selectedQ = safariConfig[continent].level[0].questions["MATH"][0];
+    var selectedQ = safariConfig[continent].level[0].questions["SPELL"][0];
 
     var animals = [];
     if(selectedQ.supportedAnimals) {
@@ -356,9 +356,9 @@ function createAdventure(continent) {
     }
     var animal = animals[Math.floor(Math.random() * animals.length)];
 
-    adventure.questions.push(createQuestion(selectedQ, "MATH", animal));
+    adventure.questions.push(createQuestion(selectedQ, "SPELL", animal));
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["MATH"][0], "MATH", animal));
     adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["GUESS"][0], "GUESS", animal));
-    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["SPELL"][0], "SPELL", animal));
 
     adventure.currentQuestion = 0;
     adventure.score = 0;
@@ -370,6 +370,8 @@ function createQuestion(selectedQ, type, animal) {
     var q = {};
     q.answer = selectedQ.answer;
     q.type = type;
+
+    q.animal = animal;
 
     q.values = [];
     q.values.push(["ANIMAL", animal]);
