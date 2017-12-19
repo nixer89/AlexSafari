@@ -211,56 +211,53 @@
         "samples": []
       },
       {
-        "name": "LetterIntent",
+        "name": "ContinentIntent",
         "samples": [
-          "{letterA}",
-          "{letterA} {letterB}",
-          "{letterA} {letterB} {letterC}",
-          "{letterA} {letterB} {letterC} {letterD}",
-          "{letterA} {letterB} {letterC} {letterD} {letterE}",
-          "{letterA} {letterB} {letterC} {letterD} {letterE} {letterF}",
-          "{letterA} {letterB} {letterC} {letterD} {letterE} {letterF} {letterG}",
-          "{letterA} {letterB} {letterC} {letterD} {letterE} {letterF} {letterG} {letterH}",
-          "{letterA} {letterB} {letterC} {letterD} {letterE} {letterF} {letterG} {letterH} {letterI}"
+          "{continent}"
         ],
         "slots": [
           {
-            "name": "letterA",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterB",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterC",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterD",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterE",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterF",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterG",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterH",
-            "type": "someLetter"
-          },
-          {
-            "name": "letterI",
-            "type": "someLetter"
+            "name": "continent",
+            "type": "continent"
           }
         ]
+      },
+      {
+        "name": "FirstNameIntent",
+        "samples": [
+          "{firstName}"
+        ],
+        "slots": [
+          {
+            "name": "firstName",
+            "type": "AMAZON.DE_FIRST_NAME"
+          }
+        ]
+      },
+      {
+        "name": "LetterIntent",
+        "samples": [
+          "{letter}"
+        ],
+        "slots": [
+          {
+            "name": "letter",
+            "type": "someLetter"
+          }]
+      },
+      {
+        "name": "RightIntent",
+        "samples": [
+          "Richtig"
+        ],
+        "slots": []
+      },
+      {
+        "name": "WrongIntent",
+        "samples": [
+          "Falsch"
+        ],
+        "slots": []
       }
     ],
     "invocationName": "safari"
