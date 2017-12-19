@@ -237,11 +237,11 @@
       {
         "name": "LetterIntent",
         "samples": [
-          "{letter}"
+          "{letterA}"
         ],
         "slots": [
           {
-            "name": "letter",
+            "name": "letterA",
             "type": "someLetter"
           }]
       },

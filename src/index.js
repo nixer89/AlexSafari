@@ -39,22 +39,10 @@ if (S3_BUCKET) {
 
 var states = {
     STARTMODE: "_STARTMODE",  // Prompt the user to start or restart the game.
-    ANIMALGUESSMODE: "_ANIMALGUESSING", // User is trying to guess an animal
-    NUMBERGUESSMODE: "_NUMBERGUESSING", // User is trying to guess the number.
     CONFIGMODE: "_CONFIGMODE", // Configure Name and Age
-
     GUESSMODE: "_GUESSMODE", // User is trying to guess an animal
     SPELLMODE: "_SPELLMODE", // User is trying to guess the number.
     MATHMODE: "_MATHMODE", // User is trying to spell some name
-    SPELLMODE_1: "_SPELLING_1",
-    SPELLMODE_2: "_SPELLING_2",
-    SPELLMODE_3: "_SPELLING_3",
-    SPELLMODE_4: "_SPELLING_4",
-    SPELLMODE_5: "_SPELLING_5",
-    SPELLMODE_6: "_SPELLING_6",
-    SPELLMODE_7: "_SPELLING_7",
-    SPELLMODE_8: "_SPELLING_8",
-    SPELLMODE_9: "_SPELLING_9" // User is trying to spell some name
 };
 
 exports.handler = function(event, context, callback) {
@@ -322,78 +310,6 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
     },
 });
 
-var animalGuessingHandlerMode1 = Alexa.CreateStateHandler(states.SPELLMODE_5, {
-    "LetterIntentFuenf": function () {
-        var currentAnimal = "elefant".toLowerCase();
-        var currentProgress = this.attributes.spelledAnimal || "";
-        //add logic for guessing the current anmial
-        var whatAlexaUnderstood = checkForLetterIntent(this.event.request.intent.slots);
-
-        console.log("what alexa understood: " + whatAlexaUnderstood);
-        console.log("current progress spelling: " + currentProgress);
-        console.log("current animal to guess: " + currentAnimal);
-
-        currentProgress += whatAlexaUnderstood.toLowerCase();
-
-        console.log("current progress with new alexa understanding: " + currentProgress);
-
-        if(currentAnimal == currentProgress) {
-            this.emit(":tell", "Hey, das hast du super gemacht! Das war komplett richtig! Glückwunsch!");
-
-        } else if(currentAnimal.indexOf(currentProgress) == 0) {
-            var responseSpeech = whatAlexaUnderstood;
-
-            var repromptSpeech = "Bis jetzt ist alles richtig. Ich habe verstanden: ";
-            var letterArray = currentProgress.split('');
-            for (var i = 0, len = letterArray.length; i < len   ; i++) {
-                repromptSpeech += "<break time=\"200ms\"/>" + letterArray[i];
-            }
-            repromptSpeech += ". Wie geht es weiter?";
-            
-            this.attributes.spelledAnimal = currentProgress;
-            this.emit(":ask", responseSpeech, repromptSpeech);
-        } else {
-            this.attributes.askForRepeat = true;
-            this.attributes.spelledAnimal = "";
-            this.emit(":ask", "Das ist leider falsch. Möchtest du es noch einmal versuchen?");
-        }
-    },
-    "AMAZON.YesIntent": function () {
-        if(this.attributes.askForRepeat) {
-            this.attributes.spelledAnimal = "";
-            this.emit(":ask", "Ok, versuchen wir es nochmal. Wie buchstabiert man Elefant?", "Wie buchstabiert man Elefant?");
-        } else {
-            this.emit(":ask", "Ok, wie buchstabiert man Elefant?", "Wie buchstabiert man Elefant?");
-        }
-        //add logic for guessing the current anmial
-        this.emit(":tell", "Hello!");
-    },
-    "AMAZON.NoIntent": function () {
-        //add logic for guessing the current anmial
-        var currentAnimal = "elefant";
-        var spellingOutput = "";
-        var letterArray = currentAnimal.split('');
-        console.log("letterArray = " + letterArray);
-        for (var i = 0, len = letterArray.length; i < len; i++) {
-            spellingOutput += " <break time=\"200ms\"/> " + letterArray[i];
-        }
-
-        console.log("speechOutput = " + spellingOutput + ". " + currentAnimal);
-
-        this.emit(":tell", "Ok, kein Problem. Dann sage ich es dir: " + spellingOutput);
-    },
-    "Unhandled": function() {
-        //repromt to guess an animal (maybe giving examples) and REPLAY THE SOUND!!!!!!
-        console.log("filled slots: " + JSON.stringify(this.event.request.intent.slots));
-        this.emit(":tell", "Das habe ich leider nicht verstanden!");
-    },
-    "SessionEndedRequest": function () {
-        this.handler.state = '';
-        delete this.attributes.STATE;  
-        this.emit(':saveState', true);
-    }
-});
-
 function askNextQuestion(s, a) {
     var q = {};
 
@@ -425,7 +341,7 @@ function createAdventure(continent) {
 
     adventure.questions = [];
 
-    var selectedQ = safariConfig[continent].level[0].questions["SPELL"][0];
+    var selectedQ = safariConfig[continent].level[0].questions["GUESS"][0];
 
     var animals = [];
     if(selectedQ.supportedAnimals) {
@@ -435,9 +351,9 @@ function createAdventure(continent) {
     }
     var animal = animals[Math.floor(Math.random() * animals.length)];
 
-    adventure.questions.push(createQuestion(selectedQ, "SPELL", animal));
+    adventure.questions.push(createQuestion(selectedQ, "GUESS", animal));
+    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["SPELL"][0], "SPELL", animal));
     adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["MATH"][0], "MATH", animal));
-    adventure.questions.push(createQuestion(safariConfig[continent].level[0].questions["GUESS"][0], "GUESS", animal));
 
     adventure.currentQuestion = 0;
     adventure.score = 0;
