@@ -1,71 +1,33 @@
 exports.getSafariConfig = function() {
     return adventure;
-}
+};
 
 var adventure = {
-    "hello_message": "SAY_HELLO_MESSAGE",
     "supportContinents" : ["Africa", "Europe", "Asia","Australia", "America"],
-    "Africa" : {
+    "Afrika" : {
         "title": "african safari",
-        "supportedAnimals" : ["elephant", "lion"],
-        "kontinent_intro": "Du läufst durch die dicht mit Bäumen bewachsene Savanne Afrikas.",
-        "elephant" : {
-            "name":"elephant",
-            "nameVariations": ["elephant", "bull elephant", "elephant child"],
+        "supportedAnimals" : ["elephant", "lion", "zebra", "hippo"],
+        "start_safari": "START_AFRICA",
+        "level" : [{
+            "level": 1,
             "questions" : {
-                "guessing": {
-                    "difficulty_1" : {
-                        "variant1": "ELEPHANT.QUESTIONS.GUESSING.DIFFICULTY_1.VARIANT_1",
-                        "variant2": "ELEPHANT.QUESTIONS.GUESSING.DIFFICULTY_1.VARIANT_2",
-                        "answer": "elephant"
-                    }
-                },
-                "math": {
-                    "difficulty_1" : {
-                        "variant1_1": "Du kommst an ein Wasserloch. Dort stehen ",
-                        "variant1_2": " Elefanten mit ihren ",
-                        "variant1_3": " Kindern. Wie viele Elefanten sind es insgesamt?",
-                        "variant2_1": "abcd",
-                        "variant2_2": "abcd",
-                    }
-                },
-                "spelling": {
-                    "difficulty_1" : {
-                        "variant1": "ELEPHANT.QUESTIONS.SPELLING.DIFFICULTY_1.VARIANT_1",
-                        "variant2": "ELEPHANT.QUESTIONS.SPELLING.DIFFICULTY_1.VARIANT_2",
-                        "answer": "elephant",
-                    }
-                }
+                "MATH" : [{
+                    "id": "WATERHOLE_COUNT",
+                    "supportedAnimals" : ["elephant", "hippo"],
+                    "answer": "#NUMBER_0#+#NUMBER_1#",
+                    "variants": 2
+                }],
+                "GUESS" : [{
+                    "id": "SIMPLE_GUESS",
+                    "answer": "elephant",
+                    "variants": 1
+                }],
+                "SPELL" : [{
+                    "id": "SIMPLE_SPELL",
+                    "answer": "elephant",
+                    "variants": 1
+                }]
             }
-        },
-        "lion" : {
-            "name":"LION.NAME",
-            "nameVariations": ["lion"],
-            "questions" : {
-                "guessing": {
-                    "difficulty_1" : {
-                        "variant1": "ELEPHANT.DIFFICULTY_1.VARIANT_1",
-                        "variant2": "ELEPHANT.DIFFICULTY_1.VARIANT_2",
-                        "answer": "elephant"
-                    }
-                },
-                "math": {
-                    "difficulty_1" : {
-                        "variant1_1": "Du kommst an ein Wasserloch. Dort stehen ",
-                        "variant1_2": " Elefanten mit ihren ",
-                        "variant1_3": " Kindern. Wie viele Elefanten sind es insgesamt?",
-                        "variant2_1": "abcd",
-                        "variant2_2": "abcd",
-                    }
-                },
-                "spelling:": {
-                    "difficulty_1" : {
-                        "variant1": "abc",
-                        "variant2": "abcd",
-                        "answer": "elephant",
-                    }
-                }
-            }
-        }
+        }]
     }
-}
+};
