@@ -271,6 +271,20 @@ var spellHandler = Alexa.CreateStateHandler(states.SPELLMODE, {
             this.emit(":ask", "Das ist leider falsch. Möchtest du es noch einmal versuchen?");
         }
     },
+    "ChangeLastLetter": function () {
+        if(this.attributes.spelledAnimal && this.attributes.spelledAnimal.length > 0) {
+            this.attributes.spelledAnimal = this.attributes.spelledAnimal.substring(0, this.attributes.spelledAnimal.length-1);
+            var repromptSpeech = "Ok, ich habe deinen letzten Buchstaben verworfen. ";
+            var letterArray = this.attributes.spelledAnimal.split('');
+            for (var i = 0, len = letterArray.length; i < len   ; i++) {
+                repromptSpeech += "<break time=\"200ms\"/>" + letterArray[i];
+            }
+            repromptSpeech += ". Wie geht es weiter?";
+            this.emit(":ask", responseSpeech, repromptSpeech);
+        } else {
+            this.emit(":ask", "Du hast mir noch keinen Buchstaben verraten. Wie buchstabiert man " + adventureQuestions[this.attributes.adventure.currentQuestion].animal +" ?");
+        }
+    },
     "AMAZON.YesIntent": function () {
         if(this.attributes.askForRepeat) {
             this.attributes.spelledAnimal = "";

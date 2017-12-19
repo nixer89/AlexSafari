@@ -258,6 +258,14 @@
           "Falsch"
         ],
         "slots": []
+      },
+      {
+        "name": "ChangeLastLetter",
+        "samples": [
+          "korrigieren",
+          "ändern"
+        ],
+        "slots": []
       }
     ],
     "invocationName": "safari"
